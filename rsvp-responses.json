@@ -1,0 +1,30 @@
+[
+  {
+    "firstName": "Domagoj",
+    "lastName": "Maras",
+    "guests": "1",
+    "guestNames": "Siniša",
+    "submittedAt": "2025-06-28T13:38:46.523Z"
+  },
+  {
+    "firstName": "Domagoj",
+    "lastName": "Maras",
+    "guests": "1",
+    "guestNames": "Krunoslav",
+    "submittedAt": "2025-06-29T13:20:25.902Z"
+  },
+  {
+    "firstName": "Domagoj",
+    "lastName": "Maras",
+    "guests": "1",
+    "guestNames": "Siniša",
+    "submittedAt": "2025-06-29T13:22:31.699Z"
+  },
+  {
+    "firstName": "Domagoj",
+    "lastName": "Maras",
+    "guests": "0",
+    "guestNames": "Nema gostiju",
+    "submittedAt": "2025-06-29T13:22:40.642Z"
+  }
+]

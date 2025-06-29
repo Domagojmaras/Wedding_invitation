@@ -1,0 +1,39 @@
+{
+    "version": 2,
+    "builds": [
+        {
+            "src": "server.js",
+            "use": "@vercel/node"
+        }
+    ],
+    "routes": [
+        {
+            "src": "/login",
+            "dest": "server.js",
+            "methods": ["GET", "POST"]
+        },
+        {
+            "src": "/submit-rsvp",
+            "dest": "server.js",
+            "methods": ["POST"]
+        },
+        {
+            "src": "/get-responses",
+            "dest": "server.js",
+            "methods": ["GET"]
+        },
+        {
+            "src": "/delete-response",
+            "dest": "server.js",
+            "methods": ["DELETE"]
+        },
+        {
+            "src": "/admin",
+            "dest": "server.js"
+        },
+        {
+            "src": "/(.*)",
+            "dest": "server.js"
+        }
+    ]
+} 
