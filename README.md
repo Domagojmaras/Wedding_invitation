@@ -64,7 +64,7 @@ Update event information in `index.html`:
 - Contact information
 
 ### Styling
-Customize the design in `styles.css`:
+Customize the design in `/styles.css`:
 - Colors and fonts
 - Layout and spacing
 - Responsive breakpoints
