@@ -8,6 +8,22 @@
     ],
     "routes": [
         {
+            "src": "/styles.css",
+            "dest": "/styles.css"
+        },
+        {
+            "src": "/app.js",
+            "dest": "/app.js"
+        },
+        {
+            "src": "/images/(.*)",
+            "dest": "/images/$1"
+        },
+        {
+            "src": "/favicon.ico",
+            "dest": "/favicon.ico"
+        },
+        {
             "src": "/login",
             "dest": "server.js",
             "methods": ["GET", "POST"]
