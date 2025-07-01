@@ -162,51 +162,6 @@
     <script>
         let responseToDelete = null;
 
-        // Check if user is authenticated
-        async function checkAuth() {
-            const password = localStorage.getItem('adminPassword');
-            if (!password) {
-                window.location.href = '/login';
-                return;
-            }
-
-            try {
-                console.log('Checking authentication...');
-                const response = await fetch('/get-responses', {
-                    headers: {
-                        'Authorization': `Bearer ${password}`
-                    }
-                });
-                if (!response.ok) {
-                    console.error('Authentication failed:', response.status);
-                    localStorage.removeItem('adminPassword');
-                    window.location.href = '/login';
-                } else {
-                    console.log('Authentication successful');
-                }
-            } catch (error) {
-                console.error('Authentication error:', error);
-                localStorage.removeItem('adminPassword');
-                window.location.href = '/login';
-            }
-        }
-
-        // Add authentication header to all fetch requests
-        async function fetchWithAuth(url, options = {}) {
-            const password = localStorage.getItem('adminPassword');
-            if (!password) {
-                window.location.href = '/login';
-                return;
-            }
-
-            const headers = {
-                ...options.headers,
-                'Authorization': `Bearer ${password}`
-            };
-
-            return fetch(url, { ...options, headers });
-        }
-
         function showConfirmDialog(timestamp) {
             console.log('showConfirmDialog called with timestamp:', timestamp);
             responseToDelete = timestamp;
@@ -263,7 +218,7 @@
             try {
                 console.log('Attempting to delete response with timestamp:', responseToDelete);
                 
-                const response = await fetchWithAuth('/delete-response', {
+                const response = await fetch('/delete-response', {
                     method: 'DELETE',
                     headers: {
                         'Content-Type': 'application/json',
@@ -291,7 +246,7 @@
         async function loadResponses() {
             try {
                 console.log('Loading responses...');
-                const response = await fetchWithAuth('/get-responses');
+                const response = await fetch('/get-responses');
                 
                 if (!response.ok) {
                     throw new Error(`HTTP error! status: ${response.status}`);
@@ -329,8 +284,6 @@
             }
         }
 
-        // Check authentication when page loads
-        checkAuth();
         // Load responses when page loads
         loadResponses();
     </script>

@@ -4,9 +4,6 @@ const path = require('path');
 const app = express();
 const port = process.env.PORT || 3000;
 
-// Admin password - you should change this to your desired password
-const ADMIN_PASSWORD = 'Marica';
-
 // Middleware to parse JSON bodies
 app.use(express.json());
 app.use(express.static('.')); // Serve static files from current directory
@@ -14,31 +11,6 @@ app.use(express.static('.')); // Serve static files from current directory
 // Serve favicon.ico
 app.get('/favicon.ico', (req, res) => {
     res.sendFile(path.join(__dirname, 'favicon.ico'));
-});
-
-// Middleware to check authentication
-const checkAuth = (req, res, next) => {
-    const authHeader = req.headers.authorization;
-    if (!authHeader) {
-        return res.status(401).json({ error: 'No authorization header' });
-    }
-
-    const token = authHeader.split(' ')[1];
-    if (token === ADMIN_PASSWORD) {
-        next();
-    } else {
-        res.status(401).json({ error: 'Unauthorized' });
-    }
-};
-
-// Login endpoint
-app.post('/login', (req, res) => {
-    const { password } = req.body;
-    if (password === ADMIN_PASSWORD) {
-        res.json({ success: true, token: password });
-    } else {
-        res.status(401).json({ error: 'Invalid password' });
-    }
 });
 
 // Endpoint to handle RSVP submissions
@@ -68,8 +40,8 @@ app.post('/submit-rsvp', (req, res) => {
     res.json({ success: true });
 });
 
-// Protected endpoints - require authentication
-app.get('/get-responses', checkAuth, (req, res) => {
+// Get all responses
+app.get('/get-responses', (req, res) => {
     try {
         const data = fs.readFileSync('rsvp-responses.json', 'utf8');
         res.json(JSON.parse(data));
@@ -78,7 +50,7 @@ app.get('/get-responses', checkAuth, (req, res) => {
     }
 });
 
-app.delete('/delete-response', checkAuth, (req, res) => {
+app.delete('/delete-response', (req, res) => {
     const { timestamp } = req.body;
     
     console.log('Delete request received for timestamp:', timestamp);
@@ -124,11 +96,6 @@ app.get('/test', (req, res) => {
 // Serve index.html for the root route
 app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'index.html'));
-});
-
-// Serve login page
-app.get('/login', (req, res) => {
-    res.sendFile(path.join(__dirname, 'login.html'));
 });
 
 // Serve admin page
