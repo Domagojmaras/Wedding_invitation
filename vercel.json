@@ -4,5 +4,10 @@
             "source": "/admin",
             "destination": "/admin.html"
         }
-    ]
+    ],
+    "functions": {
+        "api/*.js": {
+            "runtime": "@vercel/node"
+        }
+    }
 }

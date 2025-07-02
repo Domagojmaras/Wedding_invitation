@@ -102,7 +102,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const submitButton = form.querySelector('button[type="submit"]');
         submitButton.disabled = true;
 
-        fetch('/submit-rsvp', {
+        fetch('/api/submit-rsvp', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',

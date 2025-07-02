@@ -407,7 +407,7 @@
         async function loadResponses() {
             try {
                 console.log('Loading responses...');
-                const response = await fetch('/get-responses');
+                const response = await fetch('/api/get-responses');
                 
                 if (!response.ok) {
                     throw new Error(`HTTP error! status: ${response.status}`);
