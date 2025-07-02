@@ -1,8 +1,17 @@
 const express = require('express');
-const fs = require('fs');
 const path = require('path');
+const { createClient } = require('@supabase/supabase-js');
+
 const app = express();
 const port = process.env.PORT || 3000;
+
+// Supabase configuration
+const config = require('./supabase-config');
+const supabaseUrl = process.env.SUPABASE_URL || config.supabaseUrl;
+const supabaseKey = process.env.SUPABASE_ANON_KEY || config.supabaseAnonKey;
+
+// Create Supabase client
+const supabase = createClient(supabaseUrl, supabaseKey);
 
 // Middleware to parse JSON bodies
 app.use(express.json());
@@ -14,77 +23,155 @@ app.get('/favicon.ico', (req, res) => {
 });
 
 // Endpoint to handle RSVP submissions
-app.post('/submit-rsvp', (req, res) => {
-    const formData = req.body;
-    const timestamp = new Date().toISOString();
-    const response = {
-        ...formData,
-        submittedAt: timestamp
-    };
-
-    // Read existing responses
-    let responses = [];
+app.post('/submit-rsvp', async (req, res) => {
     try {
-        const data = fs.readFileSync('rsvp-responses.json', 'utf8');
-        responses = JSON.parse(data);
+        const formData = req.body;
+        
+        // Prepare data for Supabase (convert field names to match schema)
+        const supabaseData = {
+            first_name: formData.firstName,
+            last_name: formData.lastName,
+            guests: parseInt(formData.guests) || 0,
+            guest_names: formData.guestNames,
+            note: formData.message || ''
+        };
+
+        // Insert into Supabase
+        const { data, error } = await supabase
+            .from('rsvp_responses')
+            .insert([supabaseData])
+            .select();
+
+        if (error) {
+            console.error('Supabase error:', error);
+            return res.status(500).json({ 
+                success: false, 
+                error: 'Failed to save RSVP response' 
+            });
+        }
+
+        console.log('RSVP saved successfully:', data);
+        res.json({ success: true, data: data[0] });
+
     } catch (err) {
-        // File doesn't exist yet, that's okay
+        console.error('Server error:', err);
+        res.status(500).json({ 
+            success: false, 
+            error: 'Internal server error' 
+        });
     }
-
-    // Add new response
-    responses.push(response);
-
-    // Save updated responses
-    fs.writeFileSync('rsvp-responses.json', JSON.stringify(responses, null, 2));
-
-    res.json({ success: true });
 });
 
 // Get all responses
-app.get('/get-responses', (req, res) => {
+app.get('/get-responses', async (req, res) => {
     try {
-        const data = fs.readFileSync('rsvp-responses.json', 'utf8');
-        res.json(JSON.parse(data));
+        const { data, error } = await supabase
+            .from('rsvp_responses')
+            .select('*')
+            .order('submitted_at', { ascending: false });
+
+        if (error) {
+            console.error('Supabase error:', error);
+            return res.status(500).json({ 
+                error: 'Failed to fetch responses' 
+            });
+        }
+
+        // Convert data format to match frontend expectations
+        const formattedData = data.map(response => ({
+            id: response.id,
+            firstName: response.first_name,
+            lastName: response.last_name,
+            guests: response.guests,
+            guestNames: response.guest_names,
+            message: response.note || '',
+            submittedAt: response.submitted_at
+        }));
+
+        res.json(formattedData);
+
     } catch (err) {
-        res.json([]);
+        console.error('Server error:', err);
+        res.status(500).json({ 
+            error: 'Internal server error' 
+        });
     }
 });
 
-app.delete('/delete-response', (req, res) => {
-    const { timestamp } = req.body;
-    
-    console.log('Delete request received for timestamp:', timestamp);
-    
-    if (!timestamp) {
-        console.error('No timestamp provided');
-        return res.status(400).json({ error: 'No timestamp provided' });
-    }
-    
+// Delete response endpoint
+app.delete('/delete-response', async (req, res) => {
     try {
-        const data = fs.readFileSync('rsvp-responses.json', 'utf8');
-        let responses = JSON.parse(data);
+        const { timestamp, id } = req.body;
         
-        console.log('Current responses count:', responses.length);
+        console.log('Delete request received for:', { timestamp, id });
         
-        // Filter out the response with the matching timestamp
-        const originalCount = responses.length;
-        responses = responses.filter(response => response.submittedAt !== timestamp);
+        if (!timestamp && !id) {
+            console.error('No timestamp or id provided');
+            return res.status(400).json({ error: 'No timestamp or id provided' });
+        }
+
+        let query = supabase.from('rsvp_responses').delete();
         
-        console.log('Responses after filtering:', responses.length);
-        
-        if (responses.length === originalCount) {
-            console.log('No matching response found for timestamp:', timestamp);
+        // Delete by ID if provided, otherwise by timestamp
+        if (id) {
+            query = query.eq('id', id);
+        } else {
+            query = query.eq('submitted_at', timestamp);
+        }
+
+        const { data, error } = await query.select();
+
+        if (error) {
+            console.error('Supabase delete error:', error);
+            return res.status(500).json({ 
+                error: 'Failed to delete response' 
+            });
+        }
+
+        if (!data || data.length === 0) {
+            console.log('No matching response found');
             return res.status(404).json({ error: 'Response not found' });
         }
-        
-        // Save updated responses
-        fs.writeFileSync('rsvp-responses.json', JSON.stringify(responses, null, 2));
-        
-        console.log('Response deleted successfully');
-        res.json({ success: true });
+
+        console.log('Response deleted successfully:', data);
+        res.json({ success: true, deleted: data[0] });
+
     } catch (err) {
-        console.error('Error deleting response:', err);
-        res.status(500).json({ error: 'Failed to delete response' });
+        console.error('Server error:', err);
+        res.status(500).json({ 
+            error: 'Internal server error' 
+        });
+    }
+});
+
+
+
+// Test endpoint to verify Supabase connection
+app.get('/test-supabase', async (req, res) => {
+    try {
+        const { data, error } = await supabase
+            .from('rsvp_responses')
+            .select('count')
+            .limit(1);
+
+        if (error) {
+            return res.status(500).json({ 
+                connected: false, 
+                error: error.message 
+            });
+        }
+
+        res.json({ 
+            connected: true, 
+            message: 'Supabase connection successful',
+            timestamp: new Date().toISOString()
+        });
+
+    } catch (err) {
+        res.status(500).json({ 
+            connected: false, 
+            error: err.message 
+        });
     }
 });
 
@@ -105,4 +192,6 @@ app.get('/admin', (req, res) => {
 
 app.listen(port, () => {
     console.log(`Server running on port ${port}`);
+    console.log(`Supabase URL: ${supabaseUrl}`);
+    console.log('To test Supabase connection, visit: http://localhost:' + port + '/test-supabase');
 }); 

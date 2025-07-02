@@ -108,4 +108,10 @@ temp/
 
 # Local configuration files
 config.local.js
-settings.local.json 
+settings.local.json
+
+# Supabase configuration (contains API keys)
+supabase-config.js
+
+# Old JSON storage (backup)
+rsvp-responses.json 

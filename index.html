@@ -81,17 +81,6 @@
             <div class="rsvp-form">
                 <h2>Molimo potvrdite svoj dolazak do 20.09.2025.</h2>
                 <form id="rsvpForm">
-                    <div class="name-group">
-                        <div class="form-group">
-                            <label for="firstName">Ime</label>
-                            <input type="text" id="firstName" name="firstName" required>
-                        </div>
-                        <div class="form-group">
-                            <label for="lastName">Prezime</label>
-                            <input type="text" id="lastName" name="lastName" required>
-                        </div>
-                    </div>
-
                     <div class="form-group">
                         <label for="guests">Broj gostiju</label>
                         <select id="guests" name="guests" class="guest-select" required>
@@ -105,9 +94,13 @@
                         </select>
                     </div>
 
-                    <div class="form-group">
-                        <label for="guestNames">Imena gostiju koji dolaze sa mnom</label>
-                        <textarea id="guestNames" name="guestNames" rows="1"></textarea>
+                    <div id="guestNamesContainer" class="guest-names-container">
+                        <!-- Dynamic guest name inputs will be added here -->
+                    </div>
+
+                    <div class="form-group" id="messageGroup" style="display: none;">
+                        <label for="message">Ostavite mladencima poruku</label>
+                        <input type="text" id="message" name="message" placeholder="Napišite poruku za mladence...">
                     </div>
 
                     <button type="submit" class="submit-btn">Potvrdi</button>
@@ -115,6 +108,26 @@
             </div>
         </div>
     </div>
+    
+    <!-- Thank You Modal -->
+    <div id="thankYouModal" class="thank-you-modal">
+        <div class="thank-you-modal-content">
+            <h2 class="thank-you-modal-title">Veselimo se tvom dolasku!</h2>
+            <div class="thank-you-modal-hearts">❤️ 🪩 💃 🍾</div>
+            <div class="thank-you-modal-divider"></div>
+            <p class="thank-you-modal-subtitle">Hvala što ćete podijeliti ovaj poseban dan s nama!</p>
+            <button class="thank-you-modal-close" onclick="closeThankYouModal()">Zatvori</button>
+        </div>
+    </div>
+
+    <!-- Validation Modal -->
+    <div id="validationModal" class="validation-modal">
+        <div class="validation-modal-content">
+            <p class="validation-modal-title" id="validationMessage">Molimo unesite imena svih gostiju.</p>
+            <button class="validation-modal-close" onclick="closeValidationModal()">U redu</button>
+        </div>
+    </div>
+
     <script src="app.js"></script>
 </body>
 </html> 
