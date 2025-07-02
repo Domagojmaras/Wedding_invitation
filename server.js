@@ -23,126 +23,126 @@ app.get('/favicon.ico', (req, res) => {
 });
 
 // Endpoint to handle RSVP submissions
-app.post('/submit-rsvp', async (req, res) => {
-    try {
-        const formData = req.body;
+// app.post('/submit-rsvp', async (req, res) => {
+//     try {
+//         const formData = req.body;
         
-        // Prepare data for Supabase (convert field names to match schema)
-        const supabaseData = {
-            first_name: formData.firstName,
-            last_name: formData.lastName,
-            guests: parseInt(formData.guests) || 0,
-            guest_names: formData.guestNames,
-            note: formData.message || ''
-        };
+//         // Prepare data for Supabase (convert field names to match schema)
+//         const supabaseData = {
+//             first_name: formData.firstName,
+//             last_name: formData.lastName,
+//             guests: parseInt(formData.guests) || 0,
+//             guest_names: formData.guestNames,
+//             note: formData.message || ''
+//         };
 
-        // Insert into Supabase
-        const { data, error } = await supabase
-            .from('rsvp_responses')
-            .insert([supabaseData])
-            .select();
+//         // Insert into Supabase
+//         const { data, error } = await supabase
+//             .from('rsvp_responses')
+//             .insert([supabaseData])
+//             .select();
 
-        if (error) {
-            console.error('Supabase error:', error);
-            return res.status(500).json({ 
-                success: false, 
-                error: 'Failed to save RSVP response' 
-            });
-        }
+//         if (error) {
+//             console.error('Supabase error:', error);
+//             return res.status(500).json({ 
+//                 success: false, 
+//                 error: 'Failed to save RSVP response' 
+//             });
+//         }
 
-        console.log('RSVP saved successfully:', data);
-        res.json({ success: true, data: data[0] });
+//         console.log('RSVP saved successfully:', data);
+//         res.json({ success: true, data: data[0] });
 
-    } catch (err) {
-        console.error('Server error:', err);
-        res.status(500).json({ 
-            success: false, 
-            error: 'Internal server error' 
-        });
-    }
-});
+//     } catch (err) {
+//         console.error('Server error:', err);
+//         res.status(500).json({ 
+//             success: false, 
+//             error: 'Internal server error' 
+//         });
+//     }
+// });
 
 // Get all responses
-app.get('/get-responses', async (req, res) => {
-    try {
-        const { data, error } = await supabase
-            .from('rsvp_responses')
-            .select('*')
-            .order('submitted_at', { ascending: false });
+// app.get('/get-responses', async (req, res) => {
+//     try {
+//         const { data, error } = await supabase
+//             .from('rsvp_responses')
+//             .select('*')
+//             .order('submitted_at', { ascending: false });
 
-        if (error) {
-            console.error('Supabase error:', error);
-            return res.status(500).json({ 
-                error: 'Failed to fetch responses' 
-            });
-        }
+//         if (error) {
+//             console.error('Supabase error:', error);
+//             return res.status(500).json({ 
+//                 error: 'Failed to fetch responses' 
+//             });
+//         }
 
-        // Convert data format to match frontend expectations
-        const formattedData = data.map(response => ({
-            id: response.id,
-            firstName: response.first_name,
-            lastName: response.last_name,
-            guests: response.guests,
-            guestNames: response.guest_names,
-            message: response.note || '',
-            submittedAt: response.submitted_at
-        }));
+//         // Convert data format to match frontend expectations
+//         const formattedData = data.map(response => ({
+//             id: response.id,
+//             firstName: response.first_name,
+//             lastName: response.last_name,
+//             guests: response.guests,
+//             guestNames: response.guest_names,
+//             message: response.note || '',
+//             submittedAt: response.submitted_at
+//         }));
 
-        res.json(formattedData);
+//         res.json(formattedData);
 
-    } catch (err) {
-        console.error('Server error:', err);
-        res.status(500).json({ 
-            error: 'Internal server error' 
-        });
-    }
-});
+//     } catch (err) {
+//         console.error('Server error:', err);
+//         res.status(500).json({ 
+//             error: 'Internal server error' 
+//         });
+//     }
+// });
 
 // Delete response endpoint
-app.delete('/delete-response', async (req, res) => {
-    try {
-        const { timestamp, id } = req.body;
+// app.delete('/delete-response', async (req, res) => {
+//     try {
+//         const { timestamp, id } = req.body;
         
-        console.log('Delete request received for:', { timestamp, id });
+//         console.log('Delete request received for:', { timestamp, id });
         
-        if (!timestamp && !id) {
-            console.error('No timestamp or id provided');
-            return res.status(400).json({ error: 'No timestamp or id provided' });
-        }
+//         if (!timestamp && !id) {
+//             console.error('No timestamp or id provided');
+//             return res.status(400).json({ error: 'No timestamp or id provided' });
+//         }
 
-        let query = supabase.from('rsvp_responses').delete();
+//         let query = supabase.from('rsvp_responses').delete();
         
-        // Delete by ID if provided, otherwise by timestamp
-        if (id) {
-            query = query.eq('id', id);
-        } else {
-            query = query.eq('submitted_at', timestamp);
-        }
+//         // Delete by ID if provided, otherwise by timestamp
+//         if (id) {
+//             query = query.eq('id', id);
+//         } else {
+//             query = query.eq('submitted_at', timestamp);
+//         }
 
-        const { data, error } = await query.select();
+//         const { data, error } = await query.select();
 
-        if (error) {
-            console.error('Supabase delete error:', error);
-            return res.status(500).json({ 
-                error: 'Failed to delete response' 
-            });
-        }
+//         if (error) {
+//             console.error('Supabase delete error:', error);
+//             return res.status(500).json({ 
+//                 error: 'Failed to delete response' 
+//             });
+//         }
 
-        if (!data || data.length === 0) {
-            console.log('No matching response found');
-            return res.status(404).json({ error: 'Response not found' });
-        }
+//         if (!data || data.length === 0) {
+//             console.log('No matching response found');
+//             return res.status(404).json({ error: 'Response not found' });
+//         }
 
-        console.log('Response deleted successfully:', data);
-        res.json({ success: true, deleted: data[0] });
+//         console.log('Response deleted successfully:', data);
+//         res.json({ success: true, deleted: data[0] });
 
-    } catch (err) {
-        console.error('Server error:', err);
-        res.status(500).json({ 
-            error: 'Internal server error' 
-        });
-    }
-});
+//     } catch (err) {
+//         console.error('Server error:', err);
+//         res.status(500).json({ 
+//             error: 'Internal server error' 
+//         });
+//     }
+// });
 
 
 
